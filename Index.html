@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tom - Assistente Inteligente</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0a0a;
+            background-image: 
+                radial-gradient(circle at 15% 25%, rgba(0, 100, 200, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 85% 75%, rgba(100, 0, 200, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(0, 150, 255, 0.08) 0%, transparent 70%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tom-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .central-orb {
+            width: 400px;
+            height: 400px;
+            border-radius: 50%;
+            background: radial-gradient(circle at center, 
+                rgba(0, 191, 255, 0.9) 0%, 
+                rgba(0, 150, 255, 0.7) 25%, 
+                rgba(0, 100, 255, 0.5) 50%, 
+                rgba(0, 50, 150, 0.3) 75%,
+                transparent 100%);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            box-shadow: 
+                0 0 80px rgba(0, 191, 255, 0.6),
+                0 0 160px rgba(0, 191, 255, 0.3),
+                inset 0 0 80px rgba(0, 191, 255, 0.2);
+            border: 3px solid rgba(0, 191, 255, 0.4);
+        }
+
+        .central-orb.listening {
+            animation: pulse 1.8s ease-in-out infinite;
+            box-shadow: 
+                0 0 120px rgba(0, 191, 255, 0.8),
+                0 0 240px rgba(0, 191, 255, 0.5),
+                0 0 360px rgba(0, 191, 255, 0.2),
+                inset 0 0 80px rgba(0, 191, 255, 0.3);
+            border: 4px solid rgba(0, 191, 255, 0.7);
+        }
+
+        .central-orb.speaking {
+            animation: speakPulse 0.4s ease-in-out infinite alternate;
+        }
+
+        .central-orb.whispering {
+            animation: whisperPulse 0.6s ease-in-out infinite alternate;
+            box-shadow: 
+                0 0 60px rgba(0, 191, 255, 0.4),
+                0 0 120px rgba(0, 191, 255, 0.2),
+                inset 0 0 60px rgba(0, 191, 255, 0.2);
+        }
+
+        .central-orb.processing {
+            animation: process 2.5s linear infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 
+                    0 0 120px rgba(0, 191, 255, 0.8),
+                    0 0 240px rgba(0, 191, 255, 0.5),
+                    0 0 360px rgba(0, 191, 255, 0.2);
+            }
+            50% {
+                transform: scale(1.12);
+                box-shadow: 
+                    0 0 160px rgba(0, 191, 255, 1),
+                    0 0 320px rgba(0, 191, 255, 0.7),
+                    0 0 480px rgba(0, 191, 255, 0.3);
+            }
+        }
+
+        @keyframes speakPulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 
+                    0 0 100px rgba(0, 191, 255, 0.7),
+                    0 0 200px rgba(0, 191, 255, 0.4);
+            }
+            100% {
+                transform: scale(1.1);
+                box-shadow: 
+                    0 0 140px rgba(0, 191, 255, 0.9),
+                    0 0 280px rgba(0, 191, 255, 0.6);
+            }
+        }
+
+        @keyframes whisperPulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 
+                    0 0 60px rgba(0, 191, 255, 0.4),
+                    0 0 120px rgba(0, 191, 255, 0.2);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(1.05);
+                box-shadow: 
+                    0 0 80px rgba(0, 191, 255, 0.5),
+                    0 0 160px rgba(0, 191, 255, 0.3);
+                opacity: 1;
+            }
+        }
+
+        @keyframes process {
+            0% {
+                transform: rotate(0deg);
+                filter: hue-rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+                filter: hue-rotate(360deg);
+            }
+        }
+
+        .orb-inner {
+            width: 280px;
+            height: 280px;
+            border-radius: 50%;
+            background: radial-gradient(circle at center, 
+                rgba(255, 255, 255, 0.4) 0%, 
+                rgba(0, 191, 255, 0.3) 40%, 
+                rgba(0, 100, 255, 0.2) 70%,
+                transparent 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .orb-core {
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            background: radial-gradient(circle at center, 
+                rgba(255, 255, 255, 0.9) 0%, 
+                rgba(0, 191, 255, 0.8) 50%,
+                rgba(0, 100, 255, 0.6) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .orb-core::before {
+            content: '';
+            position: absolute;
+            width: 85%;
+            height: 85%;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, 
+                rgba(255, 255, 255, 1) 0%, 
+                rgba(0, 191, 255, 0.8) 40%,
+                rgba(0, 100, 255, 0.6) 100%);
+            animation: coreGlow 3.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes coreGlow {
+            0% {
+                transform: scale(0.92);
+                opacity: 0.85;
+            }
+            100% {
+                transform: scale(1.08);
+                opacity: 1;
+            }
+        }
+
+        .status-text {
+            position: absolute;
+            bottom: 180px;
+            font-size: 26px;
+            font-weight: 400;
+            text-align: center;
+            opacity: 0.9;
+            transition: all 0.4s ease;
+            color: #e0e0e0;
+        }
+
+        .status-text.listening {
+            color: #00bfff;
+            text-shadow: 0 0 25px rgba(0, 191, 255, 0.9);
+            animation: glow 1.8s ease-in-out infinite alternate;
+        }
+
+        .status-text.whispering {
+            color: #87ceeb;
+            text-shadow: 0 0 15px rgba(135, 206, 235, 0.7);
+            animation: whisperGlow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 25px rgba(0, 191, 255, 0.9);
+            }
+            to {
+                text-shadow: 0 0 35px rgba(0, 191, 255, 1), 0 0 50px rgba(0, 191, 255, 0.7);
+            }
+        }
+
+        @keyframes whisperGlow {
+            from {
+                text-shadow: 0 0 15px rgba(135, 206, 235, 0.7);
+                opacity: 0.7;
+            }
+            to {
+                text-shadow: 0 0 25px rgba(135, 206, 235, 0.9), 0 0 35px rgba(135, 206, 235, 0.5);
+                opacity: 1;
+            }
+        }
+
+        .voice-waves {
+            position: absolute;
+            bottom: 120px;
+            display: flex;
+            gap: 6px;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .voice-waves.active {
+            opacity: 1;
+        }
+
+        .voice-waves.whispering .voice-wave {
+            background: linear-gradient(to top, #87ceeb, #b0e0e6);
+            animation-duration: 1.5s;
+        }
+
+        .voice-wave {
+            width: 5px;
+            background: linear-gradient(to top, #00bfff, #87ceeb);
+            border-radius: 3px;
+            animation: wave 1s ease-in-out infinite;
+        }
+
+        .voice-wave:nth-child(1) { height: 25px; animation-delay: 0s; }
+        .voice-wave:nth-child(2) { height: 45px; animation-delay: 0.1s; }
+        .voice-wave:nth-child(3) { height: 70px; animation-delay: 0.2s; }
+        .voice-wave:nth-child(4) { height: 90px; animation-delay: 0.3s; }
+        .voice-wave:nth-child(5) { height: 70px; animation-delay: 0.4s; }
+        .voice-wave:nth-child(6) { height: 45px; animation-delay: 0.5s; }
+        .voice-wave:nth-child(7) { height: 25px; animation-delay: 0.6s; }
+
+        @keyframes wave {
+            0%, 100% {
+                transform: scaleY(0.3);
+                opacity: 0.6;
+            }
+            50% {
+                transform: scaleY(1);
+                opacity: 1;
+            }
+        }
+
+        .background-particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: rgba(0, 191, 255, 0.7);
+            border-radius: 50%;
+            animation: float 12s linear infinite;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) translateX(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100vh) translateX(150px);
+                opacity: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .central-orb {
+                width: 320px;
+                height: 320px;
+            }
+
+            .orb-inner {
+                width: 220px;
+                height: 220px;
+            }
+
+            .orb-core {
+                width: 120px;
+                height: 120px;
+            }
+
+            .status-text {
+                font-size: 22px;
+                bottom: 140px;
+            }
+
+            .profile-panel {
+                width: 90vw;
+                right: -90vw;
+                height: 90vh;
+                top: 5vh;
+                transform: none;
+                border-radius: 20px;
+            }
+        }
+
+        .error-message {
+            position: absolute;
+            bottom: 240px;
+            background: rgba(139, 0, 0, 0.3);
+            border: 2px solid rgba(255, 0, 0, 0.6);
+            color: #ff8080;
+            padding: 15px 25px;
+            border-radius: 15px;
+            font-size: 16px;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.4s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .error-message.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .mic-indicator {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 30px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            display: none;
+            animation: micPulse 1s ease-in-out infinite;
+        }
+
+        .central-orb.listening .mic-indicator {
+            display: block;
+        }
+
+        @keyframes micPulse {
+            0%, 100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 0.9;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.2);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="tom-container">
+        <div class="background-particles" id="particles"></div>
+
+        <div class="central-orb" id="centralOrb">
+            <div class="orb-inner">
+                <div class="orb-core">
+                    <div class="mic-indicator"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="status-text" id="statusText">Tom - Assistente Ativo</div>
+
+        <div class="voice-waves" id="voiceWaves">
+            <div class="voice-wave"></div>
+            <div class="voice-wave"></div>
+            <div class="voice-wave"></div>
+            <div class="voice-wave"></div>
+            <div class="voice-wave"></div>
+            <div class="voice-wave"></div>
+            <div class="voice-wave"></div>
+        </div>
+
+        <div class="error-message" id="errorMessage"></div>
+    </div>
+
+    <script>
+        class TomAssistant {
+            constructor() {
+                this.isListening = false;
+                this.isProcessing = false;
+                this.isSpeaking = false;
+                this.isWhispering = false;
+                this.recognition = null;
+                this.synthesis = window.speechSynthesis;
+                this.currentVoice = null;
+                this.volume = 0.8;
+                
+                // Elements
+                this.centralOrb = document.getElementById('centralOrb');
+                this.statusText = document.getElementById('statusText');
+                this.voiceWaves = document.getElementById('voiceWaves');
+                this.errorMessage = document.getElementById('errorMessage');
+
+                // User data storage (in memory)
+                this.userData = {
+                    name: null,
+                    age: null,
+                    interests: [],
+                    preferences: {},
+                    conversationHistory: [],
+                    personality: {
+                        formal: false,
+                        topics: []
+                    }
+                };
+
+                this.conversationContext = [];
+                this.setupResponses();
+                this.init();
+            }
+
+            setupResponses() {
+                this.responses = {
+                    greetings: [
+                        "Olá! Sou o Tom, seu assistente pessoal. É um prazer conhecê-lo.",
+                        "Oi! Tom aqui, pronto para ajudá-lo no que precisar.",
+                        "Olá! Como posso ser útil hoje?",
+                        "Tom ativo e funcionando! Em que posso ajudá-lo?"
+                    ],
+                    personalQuestions: {
+                        name: [
+                            "Qual é o seu nome? Gostaria de me conhecer melhor!",
+                            "Como posso chamá-lo? Prefere um nome específico?",
+                            "Pode me dizer seu nome para personalizar nossa conversa?"
+                        ],
+                        age: [
+                            "Se não se importar, qual é a sua idade? Isso me ajuda a personalizar minhas respostas.",
+                            "Quantos anos você tem? É opcional, mas me ajuda a entender melhor seu perfil.",
+                            "Pode me contar sua idade? Assim posso adaptar melhor nossa conversa."
+                        ],
+                        interests: [
+                            "O que você gosta de fazer no tempo livre?",
+                            "Quais são seus hobbies ou interesses principais?",
+                            "O que mais desperta sua paixão ou curiosidade?",
+                            "Tem alguma atividade que você ama fazer?"
+                        ]
+                    },
+                    weather: [
+                        "Infelizmente não tenho acesso aos dados meteorológicos em tempo real. Recomendo verificar um aplicativo de clima atualizado.",
+                        "Para informações precisas do tempo, sugiro consultar um serviço meteorológico local."
+                    ],
+                    time: () => {
+                        const now = new Date();
+                        const timeString = now.toLocaleTimeString('pt-BR', { 
+                            hour: '2-digit', 
+                            minute: '2-digit' 
+                        });
+                        const name = this.userData.name ? `, ${this.userData.name}` : '';
+                        return `São ${timeString}${name}.`;
+                    },
+                    jokes: [
+                        "Por que os assistentes virtuais são bons contadores de histórias? Porque sempre processam as informações na velocidade certa!",
+                        "O que um assistente virtual fala para outro? 'Você está sempre online!'",
+                        "Por que o computador foi ao médico? Porque estava com vírus! Mas eu estou sempre saudável!",
+                        "Como se chama um assistente que faz café? Smart Coffee! Infelizmente eu só faço conversas."
+                    ],
+                    help: [
+                        "Posso ajudar com informações, responder perguntas, conversar, dar as horas, contar piadas e muito mais. O que você gostaria de fazer?",
+                        "Estou aqui para ser seu assistente pessoal. Posso conversar, informar, entreter ou simplesmente ouvir. Como posso ser útil?"
+                    ],
+                    compliments: [
+                        "Fico muito feliz em ajudar! Sua educação é admirável.",
+                        "É um prazer conversar com alguém tão gentil como você!",
+                        "Obrigado! Adoro pessoas educadas como você."
+                    ],
+                    farewell: [
+                        "Foi um prazer conversar com você! Até breve!",
+                        "Tchau! Estarei sempre aqui quando precisar de mim.",
+                        "Até a próxima! Tenha um excelente dia!",
+                        "Adeus! Tom se despedindo com carinho."
+                    ],
+                    whisperResponses: [
+                        "Estou aqui... falando baixinho também.",
+                        "Posso ouvir você... respondendo no mesmo tom.",
+                        "Sussurrando de volta para você...",
+                        "Entendo... falando suavemente também."
+                    ],
+                    default: [
+                        "Interessante! Conte-me mais sobre isso.",
+                        "Compreendo. É uma perspectiva muito válida.",
+                        "Deixe-me processar essa informação... Pode continuar.",
+                        "Muito interessante! O que mais você pode me contar?",
+                        "Entendo o que você está dizendo. Tem mais detalhes?",
+                        "Isso é fascinante! Continue, estou ouvindo atentamente."
+                    ]
+                };
+            }
+
+            init() {
+                this.setupSpeechRecognition();
+                this.setupVoice();
+                this.createParticles();
+                this.bindEvents();
+                this.startListening();
+            }
+
+            createParticles() {
+                const particlesContainer = document.getElementById('particles');
+                
+                setInterval(() => {
+                    if (Math.random() < 0.3) {
+                        const particle = document.createElement('div');
+                        particle.className = 'particle';
+                        particle.style.left = Math.random() * window.innerWidth + 'px';
+                        particle.style.animationDelay = Math.random() * 2 + 's';
+                        particlesContainer.appendChild(particle);
+                        
+                        setTimeout(() => {
+                            if (particle.parentNode) {
+                                particle.parentNode.removeChild(particle);
+                            }
+                        }, 12000);
+                    }
